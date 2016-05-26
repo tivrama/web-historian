@@ -51,16 +51,54 @@ exports.handleRequest = function (req, res) {
 
     });
     // return;
+  } else {
   }
 
+    fs.readdir(archive.paths.archivedSites + req.url, function(err, data){
+      // var returnSite = indexOf()
+      if(err) {
+        throw err;
+      }
+      // sendResponse(res, data[1], 200, req.url);      
+
+      // var googleTest = data[req.url.substring(1)];
+      // var googleTest = data.indexOf(req.url.substring(1));
+      fs.open(archive.paths.archivedSites +'/' +  data[1], 'r', function(err, data){
+        if (err) throw err;
+
+        sendResponse(res, data, 200, req.url);
+        console.log('inside inside', data);
+
+      });
+
+      console.log('url: ', req.url);
+      console.log('data: ', data);
+      console.log('googleTest:', googleTest);
+    });
+
+
+
+        //console.log('url: ', req.url);
+    //fs find file / read file/ search folder / 
+
+    // https://nodejs.org/api/fs.html#fs_fs_mkdir_path_mode_callback
+    // fs.mkdir(path[, mode], callback)
+
+    // https://nodejs.org/api/fs.html#fs_fs_readdir_path_options_callback
+    // fs.readdir(path[, options], callback)
+
+    // https://nodejs.org/api/fs.html#fs_fs_exists_path_callback
+    // fs.exists('/etc/passwd', (exists) => {
+    //   console.log(exists ? 'it\'s there' : 'no passwd!');
+    // });
+
+//fs.open(path, flags[, mode], callback)
 
 
 
 
 
 
-
-  //fs find file / read file/ search folder / 
 
 
 
@@ -81,11 +119,13 @@ exports.handleRequest = function (req, res) {
   // } else {
   //   sendResponse(res, '', 404, req.url)
   // }
-  var action = actions[req.method];
-  if (action) {
-    action(req, res)
-  } else {
-    sendResponse(res, '', 404)
-  }
-  res.end(archive.paths.list);
+
+
+  // var action = actions[req.method];
+  // if (action) {
+  //   action(req, res)
+  // } else {
+  //   sendResponse(res, '', 404)
+  // }
+  // res.end(archive.paths.list);
 };
