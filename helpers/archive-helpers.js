@@ -33,43 +33,58 @@ exports.initialize = function(pathsObj){
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-exports.readListOfUrls = function(){
+exports.readListOfUrls = function(callback){
+  fs.readFile(exports.paths.list, function(err, sites) {
+    sites = sites.toString().split('\n');
+    if( callback ){
+      callback(sites);
+    }
+  });
 };
 
-exports.isUrlInList = function(url){
-  var route = router[url];
-  if (route) {
-    return true;
+exports.isUrlInList = function(url, callback){
+  exports.readListOfUrls(function(sites) {
+    var found = _.any(sites, function(site, i) {
+      return site.match(url);
+    });
+    callback(found);
+  });
+};
+
+// exports.addUrlToList = function(url){
+exports.addUrlToList = function(url, callback){
+  fs.appendFile(exports.paths.list, url + '\n', function(err, file){
+    callback();
+  });
+};
+
+
+exports.isUrlArchived = function(url, callback){
+    console.log('inside url archived: ', url);
+    // url = url.slice(1); // ugly hack
+    // url = url.slice(0, url.length-1); // ugly hack 
+  var sitePath = path.join(exports.paths.archivedSites, url);
+
+  fs.exists(sitePath, function(exists) {
+    callback(exists);
+  
+  });
+};
+
+exports.downloadUrls = function(urls){
+  // Iterate over urls and pipe to new files
+
+  if(typeof urls === 'string'){ //hack
+    var temp = urls; //hack
+    urls = []; //hack
+    urls.push(temp); //hack
   }
-};
-
-exports.addUrlToList = function(url){
-  // if (url === '/'){ url = '/index.html'; }
-  // console.log('test in addUrlToList');
-  // var fileObj = new ActiveXObject('Scripting.FileSystemObject');
-  // var thisFile = fileObj.OpenTextFile('../archives/sites.txt');
-  // thisFile.WriteLine(url + ',');
-  // thisFile.Close();
-  // router[url] = null;
-  // var newUrl = '/' + url;
-  console.log('url === ', url);
-  fs.readFile(paths.archivedSites + url, 'utf8', function(err, data){
-    if (err) throw err;
-    // console.log('data', data);
-    router[url] = data;
-    // sendResponse(res, data, 200, req.url);
-    // console.log(data);
-
-  });  
-
-  console.log('router[stuff]', router);
-};
-
-exports.isUrlArchived = function(){
-};
-
-exports.downloadUrls = function(url, res){
-  // Call function from htmlfetchers.js with url that retrieves page content and returns it.
-  // Store the content into paths.archievedSites. 
-  router[url] = fetcher.retrieveContent(url, res);
+  _.each(urls, function (url) {
+    url = url.slice(1); // ugly hack
+    url = url.slice(0, url.length-1); // ugly hack   
+    
+    if (!url) { return; }
+    
+    request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + "/" + url));
+  });
 };
